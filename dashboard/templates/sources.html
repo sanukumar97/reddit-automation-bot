@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Sources{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>🌐 Source Management</h1>
+    <p>Add and manage websites, blogs, and RSS feeds to monitor</p>
+</div>
+
+<!-- Add Source Form -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">➕ Add New Source</span>
+    </div>
+    <form method="post" action="/sources/add">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Source Name *</label>
+                <input type="text" name="name" placeholder="e.g. My Tech Blog" required>
+            </div>
+            <div class="form-group">
+                <label>URL *</label>
+                <input type="url" name="url" placeholder="https://example.com/blog/feed" required>
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select name="type">
+                    <option value="rss">RSS Feed (recommended)</option>
+                    <option value="webpage">Webpage / Blog</option>
+                    <option value="wix_blog">Wix Blog</option>
+                    <option value="news">News Site</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Category</label>
+                <input type="text" name="category" placeholder="e.g. Technology, Business, AI">
+            </div>
+            <div class="form-group">
+                <label>Priority (1=highest, 5=lowest)</label>
+                <select name="priority">
+                    <option value="1">1 - Highest</option>
+                    <option value="2">2 - High</option>
+                    <option value="3" selected>3 - Medium</option>
+                    <option value="4">4 - Low</option>
+                    <option value="5">5 - Lowest</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tags (comma-separated)</label>
+                <input type="text" name="tags" placeholder="e.g. tech, ai, software">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Source</button>
+    </form>
+</div>
+
+<!-- Sources List -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Monitored Sources ({{ sources|length }})</span>
+    </div>
+    {% if sources %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>URL</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Articles</th>
+                <th>Last Checked</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for source in sources %}
+        <tr>
+            <td><strong>{{ source.name }}</strong></td>
+            <td><a href="{{ source.url }}" target="_blank" title="{{ source.url }}">{{ source.url|truncate_text(40) }}</a></td>
+            <td><span class="badge badge-blue">{{ source.type }}</span></td>
+            <td>{{ source.category }}</td>
+            <td>{{ source.priority }}</td>
+            <td>{{ source.total_articles or 0 }}</td>
+            <td class="text-muted">{{ source.last_checked|format_datetime }}</td>
+            <td>
+                {% if source.enabled %}
+                <span class="badge badge-green">Active</span>
+                {% else %}
+                <span class="badge badge-gray">Paused</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="post" action="/sources/toggle/{{ source.id }}" style="display:inline">
+                    <button class="btn btn-sm btn-secondary">
+                        {% if source.enabled %}⏸ Pause{% else %}▶ Enable{% endif %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center; padding:40px; color:#666;">
+        <p style="font-size:32px; margin-bottom:12px;">📭</p>
+        <p>No sources added yet. Use the form above to add your first source!</p>
+        <p class="text-muted" style="margin-top:8px;">Tip: RSS feeds are the most reliable. Most blogs have a /feed or /rss URL.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">💡 Tips for Finding RSS Feeds</span>
+    </div>
+    <div style="font-size: 13px; color: #aaa; line-height: 1.8;">
+        <p><strong>Most common RSS URL patterns:</strong></p>
+        <code>https://example.com/feed</code><br>
+        <code>https://example.com/feed.xml</code><br>
+        <code>https://example.com/rss</code><br>
+        <code>https://example.com/rss.xml</code><br>
+        <code>https://example.com/blog/feed</code>
+        <p style="margin-top:12px;"><strong>For Wix blogs:</strong> Use <code>https://yoursite.wixsite.com/blog/feed.xml</code></p>
+        <p style="margin-top:8px;"><strong>For WordPress blogs:</strong> Just add <code>/feed</code> to the blog URL</p>
+        <p style="margin-top:8px;"><strong>Can't find an RSS?</strong> Use type "Webpage" — the bot will scrape article links automatically</p>
+    </div>
+</div>
+
+{% endblock %}

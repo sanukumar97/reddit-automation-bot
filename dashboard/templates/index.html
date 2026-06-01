@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <div>
+        <h1>Dashboard</h1>
+        <p>System overview and quick actions</p>
+    </div>
+    <button class="run-btn" onclick="runCycle()">▶ Run Cycle Now</button>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value" data-stat="total_articles">{{ stats.total_articles }}</div>
+        <div class="stat-label">Total Articles</div>
+        <div class="stat-sub">+{{ stats.recent_articles }} today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" data-stat="analyzed_articles">{{ stats.analyzed_articles }}</div>
+        <div class="stat-label">Analyzed</div>
+        <div class="stat-sub">AI processed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" data-stat="pending_drafts">{{ stats.pending_drafts }}</div>
+        <div class="stat-label">Pending Review</div>
+        <div class="stat-sub">Awaiting approval</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" data-stat="total_posts">{{ stats.total_posts }}</div>
+        <div class="stat-label">Posts Published</div>
+        <div class="stat-sub">On Reddit</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" data-stat="total_sources">{{ stats.total_sources }}</div>
+        <div class="stat-label">Active Sources</div>
+        <div class="stat-sub">Being monitored</div>
+    </div>
+    <div class="stat-card" style="border-color:#2d3a2d;">
+        <div class="stat-value" style="color:#4caf50;" data-stat="cleaned_articles">{{ stats.cleaned_articles or 0 }}</div>
+        <div class="stat-label">Content Cleaned</div>
+        <div class="stat-sub">{{ stats.db_size_mb or 0 }} MB DB size</div>
+    </div>
+</div>
+
+<div class="two-col">
+    <!-- Pending Review -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">⏳ Pending Review</span>
+            <a href="/posts" class="btn btn-sm btn-secondary">View All</a>
+        </div>
+        {% if pending %}
+        <table>
+            <thead>
+                <tr><th>Post Title</th><th>Subreddit</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+            {% for post in pending %}
+            <tr>
+                <td>{{ post.title|truncate_text(55) }}</td>
+                <td><span class="badge badge-blue">r/{{ post.subreddit }}</span></td>
+                <td>
+                    <form method="post" action="/posts/approve/{{ post.id }}" style="display:inline">
+                        <button class="btn btn-sm btn-success">✓</button>
+                    </form>
+                    <form method="post" action="/posts/reject/{{ post.id }}" style="display:inline">
+                        <button class="btn btn-sm btn-danger">✗</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted" style="text-align:center; padding:20px;">No posts pending review</p>
+        {% endif %}
+    </div>
+
+    <!-- Recently Published -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">✅ Recently Published</span>
+            <a href="/published" class="btn btn-sm btn-secondary">View All</a>
+        </div>
+        {% if recent_posts %}
+        <table>
+            <thead>
+                <tr><th>Title</th><th>Subreddit</th><th>Score</th></tr>
+            </thead>
+            <tbody>
+            {% for post in recent_posts %}
+            <tr>
+                <td>
+                    {% if post.reddit_url %}
+                    <a href="{{ post.reddit_url }}" target="_blank">{{ post.title|truncate_text(50) }}</a>
+                    {% else %}
+                    {{ post.title|truncate_text(50) }}
+                    {% endif %}
+                </td>
+                <td><span class="badge badge-blue">r/{{ post.subreddit }}</span></td>
+                <td>{{ post.score }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted" style="text-align:center; padding:20px;">No posts published yet</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Logs -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📋 Recent Activity</span>
+        <a href="/logs" class="btn btn-sm btn-secondary">View All Logs</a>
+    </div>
+    {% if recent_logs %}
+    <table>
+        <thead>
+            <tr><th>Time</th><th>Level</th><th>Module</th><th>Message</th></tr>
+        </thead>
+        <tbody>
+        {% for log in recent_logs %}
+        <tr>
+            <td class="text-muted">{{ log.created_at|format_datetime }}</td>
+            <td>
+                <span class="badge {% if log.level == 'ERROR' %}badge-red{% elif log.level == 'WARNING' %}badge-orange{% else %}badge-green{% endif %}">
+                    {{ log.level }}
+                </span>
+            </td>
+            <td class="text-muted">{{ log.module }}</td>
+            <td>{{ log.message|truncate_text(80) }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted" style="text-align:center; padding:20px;">No logs yet</p>
+    {% endif %}
+</div>
+
+<script>
+function runCycle() {
+    const btn = document.querySelector('.run-btn');
+    btn.textContent = '⏳ Running...';
+    btn.disabled = true;
+    fetch('/api/run-cycle', {method: 'POST'})
+        .then(r => r.json())
+        .then(d => {
+            btn.textContent = '✅ Started!';
+            setTimeout(() => {
+                btn.textContent = '▶ Run Cycle Now';
+                btn.disabled = false;
+            }, 3000);
+        })
+        .catch(() => {
+            btn.textContent = '▶ Run Cycle Now';
+            btn.disabled = false;
+        });
+}
+</script>
+{% endblock %}

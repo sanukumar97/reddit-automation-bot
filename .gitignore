@@ -1,0 +1,32 @@
+# ============================================================
+# NEVER upload these to GitHub — contains your API keys!
+# ============================================================
+config/settings.yaml
+
+# Database (large file, machine-specific)
+database/knowledge_base.db
+database/knowledge_base.db-journal
+database/knowledge_base.db-wal
+database/knowledge_base.db-shm
+
+# Quora draft files (local output)
+quora_drafts/
+
+# Logs (machine-specific)
+logs/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment (if you create one)
+venv/
+env/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db

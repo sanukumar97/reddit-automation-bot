@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Quora{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Q Quora Answers</h1>
+    <p>AI-generated Quora answers ready to copy-paste</p>
+</div>
+
+{% if not quora_enabled %}
+<div class="card" style="border-color:#3a2a00;">
+    <div style="padding:8px 0;">
+        <p style="color:#ff9800; font-weight:600; margin-bottom:10px;">⚠️ Quora generation is currently disabled</p>
+        <p style="color:#aaa; font-size:13px;">To enable it, update <code>config/settings.yaml</code>:</p>
+        <pre style="margin-top:10px;">quora:
+  enabled: true
+  auto_export_drafts: true
+  max_answers_per_cycle: 3</pre>
+        <p style="color:#888; font-size:12px; margin-top:10px;">No API needed! Answers are saved as files for manual copy-pasting to Quora.</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- How Quora works -->
+<div class="card" style="border-color:#1a2a1a;">
+    <div style="font-size:13px; color:#aaa; line-height:1.8;">
+        <p>💡 <strong style="color:#ccc;">How Quora automation works:</strong>
+        The AI generates a relevant question + full expert answer from each article.
+        Answers are saved to the <code>quora_drafts/</code> folder as <code>.md</code> files.
+        You copy-paste the answer into Quora manually — takes about 30 seconds per answer.</p>
+    </div>
+</div>
+
+<!-- Quora Drafts -->
+{% if drafts %}
+<p class="text-muted" style="margin-bottom:12px;">{{ drafts|length }} answer draft(s) total</p>
+
+{% for draft in drafts %}
+<div class="card" style="margin-bottom:20px; {% if draft.status == 'posted_manually' %}opacity:0.6;{% endif %}">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+        <div>
+            <span class="badge {% if draft.status == 'posted_manually' %}badge-green{% elif draft.status == 'exported' %}badge-blue{% else %}badge-gray{% endif %}">
+                {{ draft.status }}
+            </span>
+            <span class="text-muted" style="margin-left:8px; font-size:11px;">
+                {{ draft.word_count }} words · Generated {{ draft.generated_at|format_datetime }}
+            </span>
+        </div>
+        <div style="display:flex; gap:8px;">
+            {% if draft.status != 'posted_manually' %}
+            <form method="post" action="/quora/export/{{ draft.id }}" style="display:inline">
+                <button class="btn btn-sm btn-secondary">📁 Export File</button>
+            </form>
+            <form method="post" action="/quora/mark-posted/{{ draft.id }}" style="display:inline">
+                <button class="btn btn-sm btn-success">✓ Mark Posted</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <label style="color:#ff9800; font-size:11px; display:block; margin-bottom:4px;">QUESTION TO ANSWER ON QUORA:</label>
+        <p style="font-size:15px; font-weight:600; color:#fff; font-style:italic;">"{{ draft.question }}"</p>
+    </div>
+
+    {% if draft.topics %}
+    <div style="margin-bottom:12px;">
+        <label style="color:#888; font-size:11px; display:block; margin-bottom:4px;">SUGGESTED TOPICS:</label>
+        <p style="color:#aaa; font-size:13px;">
+        {% set topic_list = draft.topics %}
+        {% if topic_list is string %}
+            {{ topic_list }}
+        {% else %}
+            {{ topic_list | join(', ') }}
+        {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <div>
+        <label style="color:#888; font-size:11px; display:block; margin-bottom:4px;">ANSWER (copy this into Quora):</label>
+        <div style="background:#0d0d0d; border:1px solid #2a2a2a; border-radius:6px; padding:16px; font-size:13px; line-height:1.8; color:#ccc; white-space:pre-wrap; max-height:300px; overflow-y:auto;">{{ draft.answer_text }}</div>
+    </div>
+
+    {% if draft.article_title %}
+    <p class="text-muted" style="font-size:11px; margin-top:8px;">📰 Source: {{ draft.article_title|truncate_text(80) }}</p>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% else %}
+<div class="card" style="text-align:center; padding:60px;">
+    <p style="font-size:40px; margin-bottom:16px;">📝</p>
+    <p style="font-size:16px; color:#ccc;">No Quora drafts yet</p>
+    <p class="text-muted" style="margin-top:8px;">
+        Enable Quora in settings and run a cycle to generate your first answers.
+    </p>
+    <a href="/settings" class="btn btn-primary" style="margin-top:20px; display:inline-block;">→ Enable Quora</a>
+</div>
+{% endif %}
+
+{% endblock %}

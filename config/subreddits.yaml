@@ -1,0 +1,53 @@
+# ============================================================
+# SUBREDDITS CONFIGURATION
+# Configure which subreddits to post to and their rules
+# ============================================================
+
+subreddits:
+  - name: "technology"
+    display_name: "r/technology"
+    enabled: true
+    post_type: "text"            # "text", "link", or "hybrid"
+    flair: ""                    # Optional post flair
+    categories: ["Technology"]   # Only post content from these categories
+    min_karma_required: 0        # Some subreddits require minimum karma
+    rules_summary: >
+      Be respectful. No spam. Stay on topic.
+      Personal information posts not allowed.
+    custom_instructions: >
+      Posts for r/technology should focus on technical implications
+      and societal impact. Ask thought-provoking questions.
+      Avoid marketing language. Sound like a curious developer.
+
+  - name: "artificial"
+    display_name: "r/artificial"
+    enabled: true
+    post_type: "text"
+    flair: "Discussion"
+    categories: ["Technology", "AI", "Education"]
+    min_karma_required: 0
+    rules_summary: >
+      Focus on AI topics. No self-promotion. Be constructive.
+    custom_instructions: >
+      Posts for r/artificial should discuss AI trends, implications,
+      and interesting use cases. Ask open-ended discussion questions.
+      Sound knowledgeable but not academic. Encourage debate.
+
+  - name: "entrepreneur"
+    display_name: "r/Entrepreneur"
+    enabled: false
+    post_type: "text"
+    flair: ""
+    categories: ["Business", "Marketing"]
+    min_karma_required: 0
+    rules_summary: >
+      Must be relevant to entrepreneurship.
+      Share experiences, lessons, and insights.
+    custom_instructions: >
+      Posts should share practical insights and lessons.
+      Frame content as personal observations or questions.
+      Ask for community experiences and advice.
+
+  # -----------------------------------------------------------
+  # ADD YOUR OWN SUBREDDITS BELOW
+  # -----------------------------------------------------------

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Review Queue{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>✍️ Post Review Queue</h1>
+    <p>Review AI-generated Reddit posts before publishing</p>
+</div>
+
+{% if posts %}
+<p class="text-muted" style="margin-bottom:16px;">{{ posts|length }} post(s) awaiting review</p>
+
+{% for post in posts %}
+<div class="card" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+        <div>
+            <span class="badge badge-blue" style="margin-right:8px;">r/{{ post.subreddit }}</span>
+            <span class="badge badge-gray">{{ post.post_type }}</span>
+            <span class="text-muted" style="margin-left:8px; font-size:11px;">
+                Generated {{ post.generated_at|format_datetime }}
+            </span>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <a href="/posts/edit/{{ post.id }}" class="btn btn-sm btn-secondary">✏️ Edit</a>
+            <form method="post" action="/posts/approve/{{ post.id }}" style="display:inline">
+                <button class="btn btn-sm btn-success">✓ Approve</button>
+            </form>
+            <form method="post" action="/posts/reject/{{ post.id }}" style="display:inline">
+                <button class="btn btn-sm btn-danger">✗ Reject</button>
+            </form>
+        </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <label style="color:#888; font-size:11px; margin-bottom:4px; display:block;">POST TITLE</label>
+        <p style="font-size:15px; font-weight:600; color:#fff;">{{ post.title }}</p>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <label style="color:#888; font-size:11px; margin-bottom:4px; display:block;">POST BODY</label>
+        <div style="background:#111; border:1px solid #2a2a2a; border-radius:6px; padding:14px; font-size:13px; line-height:1.7; color:#ccc; white-space:pre-wrap;">{{ post.body }}</div>
+    </div>
+
+    {% if post.article_title %}
+    <div style="border-top:1px solid #222; padding-top:10px; font-size:12px; color:#666;">
+        📰 Source article: <a href="{{ post.article_url or '#' }}" target="_blank">{{ post.article_title|truncate_text(80) }}</a>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% else %}
+<div class="card" style="text-align:center; padding:60px;">
+    <p style="font-size:40px; margin-bottom:16px;">🎉</p>
+    <p style="font-size:16px; color:#ccc;">Queue is empty!</p>
+    <p class="text-muted" style="margin-top:8px;">All posts have been reviewed. New posts will appear here after the next automation cycle.</p>
+    <a href="/" class="btn btn-primary" style="margin-top:20px; display:inline-block;">← Back to Dashboard</a>
+</div>
+{% endif %}
+
+{% endblock %}

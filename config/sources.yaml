@@ -1,0 +1,68 @@
+# ============================================================
+# CONTENT SOURCES CONFIGURATION
+# Add all websites, blogs, and RSS feeds to monitor here
+# ============================================================
+
+sources:
+  # -----------------------------------------------------------
+  # RSS FEEDS (most reliable method)
+  # -----------------------------------------------------------
+  - id: "source_001"
+    name: "Example Tech Blog"
+    url: "https://example-tech-blog.com/feed"
+    type: "rss"
+    category: "Technology"
+    priority: 1              # 1=highest, 5=lowest
+    enabled: true
+    tags: ["tech", "software", "ai"]
+
+  - id: "source_002"
+    name: "Example News Site RSS"
+    url: "https://example-news.com/rss"
+    type: "rss"
+    category: "News"
+    priority: 2
+    enabled: true
+    tags: ["news", "current events"]
+
+  # -----------------------------------------------------------
+  # WIX BLOGS (scrape directly)
+  # -----------------------------------------------------------
+  - id: "source_003"
+    name: "My Wix Blog"
+    url: "https://YOUR-WIX-SITE.wixsite.com/blog"
+    type: "wix_blog"
+    category: "Business"
+    priority: 1
+    enabled: true
+    tags: ["business", "marketing"]
+
+  # -----------------------------------------------------------
+  # REGULAR WEBSITES / BLOG PAGES
+  # -----------------------------------------------------------
+  - id: "source_004"
+    name: "Example Blog Category"
+    url: "https://example-blog.com/category/technology/"
+    type: "webpage"
+    category: "Technology"
+    priority: 2
+    enabled: true
+    tags: ["technology"]
+
+  # -----------------------------------------------------------
+  # EDUCATIONAL / DOCUMENTATION SITES
+  # -----------------------------------------------------------
+  - id: "source_005"
+    name: "Example Documentation"
+    url: "https://docs.example.com/blog"
+    type: "webpage"
+    category: "Education"
+    priority: 3
+    enabled: true
+    tags: ["education", "docs"]
+
+# -----------------------------------------------------------
+# ADD YOUR OWN SOURCES BELOW
+# Copy any block above and modify for your sources
+# Types: "rss", "webpage", "wix_blog", "news"
+# -----------------------------------------------------------

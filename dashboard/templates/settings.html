@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>⚙️ Settings</h1>
+    <p>Configure your bot, writing style, and Reddit targets</p>
+</div>
+
+<!-- Storage Cleanup Card -->
+<div class="card" style="border-color:#2d3a2d;">
+    <div class="card-header">
+        <span class="card-title">🗑️ Storage Cleanup</span>
+        <button class="btn btn-sm btn-secondary" onclick="runCleanup()">Run Cleanup Now</button>
+    </div>
+    <div style="font-size:13px; color:#aaa; line-height:1.9;">
+        <p>
+            The bot automatically deletes scraped content <strong style="color:#ccc;">{{ config.storage.cleanup_after_days|default(2) }} days after a post is published</strong> to keep storage low.
+        </p>
+        <p style="margin-top:8px;"><strong style="color:#888;">What gets deleted:</strong> Full article text, AI analysis, summaries, images, key insights</p>
+        <p><strong style="color:#888;">What is kept forever:</strong> Article title, URL, source, dates — so the bot never re-posts the same content</p>
+        <p style="margin-top:8px; color:#555;">To change the 2-day window, edit <code>storage.cleanup_after_days</code> in <strong>settings.yaml</strong> below.</p>
+    </div>
+</div>
+
+<script>
+function runCleanup() {
+    const btn = event.target;
+    btn.textContent = '⏳ Cleaning...';
+    btn.disabled = true;
+    fetch('/api/run-cleanup', {method: 'POST'})
+        .then(r => r.json())
+        .then(d => {
+            btn.textContent = `✅ Cleaned ${d.cleaned} article(s)`;
+            setTimeout(() => { btn.textContent = 'Run Cleanup Now'; btn.disabled = false; }, 3000);
+        })
+        .catch(() => { btn.textContent = 'Run Cleanup Now'; btn.disabled = false; });
+}
+</script>
+
+<!-- System Status -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">🔌 System Status</span>
+        <a href="/api/status" target="_blank" class="btn btn-sm btn-secondary">Refresh</a>
+    </div>
+    <div class="three-col">
+        <div style="text-align:center; padding:16px;">
+            <div style="font-size:28px;">{% if reddit_status.connected %}✅{% else %}❌{% endif %}</div>
+            <div style="font-size:14px; font-weight:600; margin-top:8px;">Reddit API</div>
+            {% if reddit_status.connected %}
+            <div class="text-muted">u/{{ reddit_status.username }}</div>
+            <div class="text-muted">{{ reddit_status.karma|default(0)|int }} karma</div>
+            {% else %}
+            <div class="text-danger" style="font-size:12px;">{{ reddit_status.error|default('Not connected') }}</div>
+            {% endif %}
+        </div>
+
+        <div style="text-align:center; padding:16px;">
+            <div style="font-size:28px;">{% if ollama_status.running %}✅{% else %}❌{% endif %}</div>
+            <div style="font-size:14px; font-weight:600; margin-top:8px;">Ollama (AI)</div>
+            {% if ollama_status.running %}
+            <div class="text-muted">Running locally</div>
+            {% if ollama_status.model_available %}
+            <div class="text-success" style="font-size:12px;">Model: {{ ai_config.model }} ✓</div>
+            {% else %}
+            <div class="text-warning" style="font-size:12px;">Model not downloaded yet</div>
+            {% endif %}
+            {% else %}
+            <div class="text-danger" style="font-size:12px;">Not running — install from ollama.ai</div>
+            {% endif %}
+        </div>
+
+        <div style="text-align:center; padding:16px;">
+            <div style="font-size:28px;">✅</div>
+            <div style="font-size:14px; font-weight:600; margin-top:8px;">Database</div>
+            <div class="text-muted">SQLite — local</div>
+        </div>
+    </div>
+</div>
+
+<!-- Writing Instructions Editor -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">✍️ Writing Instructions</span>
+        <span class="text-muted" style="font-size:12px;">Changes take effect on next post generation</span>
+    </div>
+    <form method="post" action="/settings/save-instructions">
+        <div class="form-group">
+            <textarea name="content" class="code-editor" rows="25">{{ instructions_content }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Writing Instructions</button>
+    </form>
+</div>
+
+<!-- Subreddits Editor -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">🎯 Subreddits Configuration</span>
+        <span class="text-muted" style="font-size:12px;">YAML format</span>
+    </div>
+    <form method="post" action="/settings/save-subreddits">
+        <div class="form-group">
+            <textarea name="content" class="code-editor" rows="20">{{ subreddits_content }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Subreddits</button>
+    </form>
+</div>
+
+<!-- Main Settings Editor -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">🔧 Main Settings (settings.yaml)</span>
+        <span class="text-warning" style="font-size:12px;">⚠️ Contains API credentials — keep this private</span>
+    </div>
+    <form method="post" action="/settings/save-settings">
+        <div class="form-group">
+            <textarea name="content" class="code-editor" rows="30">{{ settings_content }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+        <span class="text-muted" style="margin-left:12px; font-size:12px;">Restart the bot after saving</span>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Published Posts{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>✅ Published Posts</h1>
+    <p>All posts that have been submitted to Reddit</p>
+</div>
+
+{% if posts %}
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Subreddit</th>
+                <th>Posted</th>
+                <th>Score</th>
+                <th>Comments</th>
+                <th>Upvote %</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for post in posts %}
+        <tr>
+            <td>
+                {% if post.reddit_url %}
+                <a href="{{ post.reddit_url }}" target="_blank">{{ post.title|truncate_text(60) }}</a>
+                {% else %}
+                {{ post.title|truncate_text(60) }}
+                {% endif %}
+            </td>
+            <td><span class="badge badge-blue">r/{{ post.subreddit }}</span></td>
+            <td class="text-muted">{{ post.posted_at|format_datetime }}</td>
+            <td>
+                <span style="color:{% if post.score > 10 %}#4caf50{% elif post.score > 0 %}#ff9800{% else %}#888{% endif %}">
+                    {{ post.score }}
+                </span>
+            </td>
+            <td>{{ post.num_comments }}</td>
+            <td>
+                {% if post.upvote_ratio %}
+                {{ (post.upvote_ratio * 100)|int }}%
+                {% else %}—{% endif %}
+            </td>
+            <td>
+                <span class="badge {% if post.status == 'posted' %}badge-green{% else %}badge-red{% endif %}">
+                    {{ post.status }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card" style="text-align:center; padding:60px;">
+    <p style="font-size:40px; margin-bottom:16px;">📭</p>
+    <p style="font-size:16px; color:#ccc;">No posts published yet</p>
+    <p class="text-muted" style="margin-top:8px;">Posts will appear here after they've been approved and submitted to Reddit.</p>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,35 @@
+# Reddit Automation System - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Reddit API
+praw>=7.7.0
+
+# Web scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+feedparser>=6.0.10
+lxml>=4.9.0
+
+# Web dashboard
+flask>=3.0.0
+
+# Configuration
+pyyaml>=6.0
+
+# Scheduling (used if you want cron-style scheduling)
+apscheduler>=3.10.0
+
+# Optional: Email notifications
+# (built into Python standard library, no install needed)
+
+# Optional: OpenAI (only if using OpenAI provider)
+# openai>=1.0.0
+
+# Optional: Anthropic Claude (only if using Anthropic provider)
+# anthropic>=0.20.0
+
+# Standard library (no install needed):
+# sqlite3, json, hashlib, logging, threading, argparse, datetime
+
+# Twitter API
+tweepy>=4.14.0

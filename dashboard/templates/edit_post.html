@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Edit Post{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>✏️ Edit Post</h1>
+    <p>Modify the AI-generated post before approving</p>
+</div>
+
+<div class="card">
+    <form method="post">
+        <div class="form-group">
+            <label>Post Title</label>
+            <input type="text" name="title" value="{{ post.title }}" required>
+            <p class="text-muted" style="margin-top:4px;">50-100 characters recommended. No clickbait.</p>
+        </div>
+        <div class="form-group">
+            <label>Post Body</label>
+            <textarea name="body" rows="12" style="line-height:1.7;">{{ post.body }}</textarea>
+            <p class="text-muted" style="margin-top:4px;">100-300 words. Conversational, no bullet points.</p>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="/posts" class="btn btn-secondary">Cancel</a>
+            <span class="text-muted">For: <strong>r/{{ post.subreddit }}</strong></span>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📝 Writing Guidelines</span>
+    </div>
+    <div style="font-size:13px; color:#aaa; line-height:1.8;">
+        <p>✅ Sound like a genuine community member</p>
+        <p>✅ Start with a hook or observation</p>
+        <p>✅ End with a question to spark discussion</p>
+        <p>✅ Keep it conversational (no headers, no bullet points)</p>
+        <p>❌ Don't mention the source article</p>
+        <p>❌ No marketing language or buzzwords</p>
+        <p>❌ No "As an AI..."</p>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Reddit Automation{% endblock %} | Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; }
+        a { color: #ff6b35; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Layout */
+        .sidebar { width: 220px; background: #1a1a1a; border-right: 1px solid #2a2a2a; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100; }
+        .main-content { margin-left: 220px; padding: 24px; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid #2a2a2a; }
+        .sidebar-header h2 { font-size: 14px; color: #ff6b35; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-header p { font-size: 11px; color: #666; margin-top: 4px; }
+        .nav-section { padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
+        .nav-section-label { font-size: 10px; text-transform: uppercase; color: #555; padding: 0 16px 6px; letter-spacing: 1px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 16px; font-size: 13px; color: #aaa; transition: all 0.15s; }
+        .nav-link:hover { background: #252525; color: #e0e0e0; text-decoration: none; }
+        .nav-link.active { background: #252525; color: #ff6b35; border-left: 3px solid #ff6b35; }
+        .nav-link .icon { font-size: 15px; width: 20px; text-align: center; }
+
+        /* Status indicators */
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-ok { background: #4caf50; }
+        .status-warn { background: #ff9800; }
+        .status-err { background: #f44336; }
+        .sidebar-status { padding: 12px 16px; font-size: 11px; color: #666; }
+        .sidebar-status span { display: block; margin-bottom: 4px; }
+
+        /* Page header */
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 22px; font-weight: 600; color: #fff; }
+        .page-header p { font-size: 13px; color: #888; margin-top: 4px; }
+
+        /* Cards */
+        .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .card-title { font-size: 14px; font-weight: 600; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Stats grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px; text-align: center; }
+        .stat-value { font-size: 28px; font-weight: 700; color: #ff6b35; }
+        .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+        .stat-sub { font-size: 11px; color: #555; margin-top: 2px; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 8px 12px; background: #222; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #2a2a2a; }
+        td { padding: 10px 12px; border-bottom: 1px solid #222; vertical-align: top; }
+        tr:hover td { background: #1f1f1f; }
+        tr:last-child td { border-bottom: none; }
+
+        /* Badges */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+        .badge-green { background: #1a3a1a; color: #4caf50; }
+        .badge-orange { background: #3a2a00; color: #ff9800; }
+        .badge-red { background: #3a1a1a; color: #f44336; }
+        .badge-blue { background: #1a2a3a; color: #64b5f6; }
+        .badge-gray { background: #2a2a2a; color: #888; }
+        .badge-purple { background: #2a1a3a; color: #ce93d8; }
+
+        /* Buttons */
+        .btn { display: inline-block; padding: 7px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: none; font-weight: 500; transition: all 0.15s; }
+        .btn-primary { background: #ff6b35; color: #fff; }
+        .btn-primary:hover { background: #e5602e; }
+        .btn-success { background: #2e7d32; color: #fff; }
+        .btn-success:hover { background: #1b5e20; }
+        .btn-danger { background: #c62828; color: #fff; }
+        .btn-danger:hover { background: #b71c1c; }
+        .btn-secondary { background: #333; color: #ccc; border: 1px solid #444; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+        /* Forms */
+        input, select, textarea { background: #222; border: 1px solid #333; color: #e0e0e0; padding: 8px 12px; border-radius: 6px; font-size: 13px; width: 100%; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #ff6b35; }
+        textarea { resize: vertical; min-height: 120px; }
+        label { display: block; font-size: 12px; color: #888; margin-bottom: 6px; }
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+        /* Alerts / Flash */
+        .alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
+        .alert-success { background: #1a3a1a; border: 1px solid #2e7d32; color: #81c784; }
+        .alert-error { background: #3a1a1a; border: 1px solid #c62828; color: #ef9a9a; }
+        .alert-info { background: #1a2a3a; border: 1px solid #1565c0; color: #90caf9; }
+
+        /* Two-column layout */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        @media (max-width: 900px) { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+        /* Code / pre */
+        pre, code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; }
+        pre { background: #111; padding: 16px; border-radius: 6px; overflow-x: auto; color: #ccc; border: 1px solid #2a2a2a; }
+        textarea.code-editor { font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace; font-size: 12px; min-height: 300px; line-height: 1.6; }
+
+        /* Misc */
+        .text-muted { color: #666; font-size: 12px; }
+        .text-success { color: #4caf50; }
+        .text-danger { color: #f44336; }
+        .text-warning { color: #ff9800; }
+        .mb-0 { margin-bottom: 0; }
+        .mt-16 { margin-top: 16px; }
+        .flex { display: flex; align-items: center; gap: 8px; }
+        .run-btn { background: #ff6b35; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+        .run-btn:hover { background: #e5602e; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>🤖 Reddit Bot</h2>
+        <p>Automation Dashboard</p>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+            <span class="icon">🏠</span> Dashboard
+        </a>
+        <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">
+            <span class="icon">📊</span> Analytics
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Content</div>
+        <a href="/sources" class="nav-link {% if request.path == '/sources' %}active{% endif %}">
+            <span class="icon">🌐</span> Sources
+        </a>
+        <a href="/articles" class="nav-link {% if request.path == '/articles' %}active{% endif %}">
+            <span class="icon">📰</span> Articles
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Reddit</div>
+        <a href="/posts" class="nav-link {% if request.path == '/posts' %}active{% endif %}">
+            <span class="icon">✍️</span> Review Queue
+        </a>
+        <a href="/published" class="nav-link {% if request.path == '/published' %}active{% endif %}">
+            <span class="icon">✅</span> Published
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Other Platforms</div>
+        <a href="/twitter" class="nav-link {% if request.path == '/twitter' %}active{% endif %}">
+            <span class="icon">𝕏</span> Twitter/X
+        </a>
+        <a href="/quora" class="nav-link {% if request.path == '/quora' %}active{% endif %}">
+            <span class="icon">Q</span> Quora
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">System</div>
+        <a href="/settings" class="nav-link {% if request.path == '/settings' %}active{% endif %}">
+            <span class="icon">⚙️</span> Settings
+        </a>
+        <a href="/logs" class="nav-link {% if request.path == '/logs' %}active{% endif %}">
+            <span class="icon">📋</span> Logs
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else ('error' if category == 'error' else 'info') }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script>
+// Auto-refresh stats every 60 seconds
+setInterval(function() {
+    fetch('/api/stats').then(r => r.json()).then(data => {
+        document.querySelectorAll('[data-stat]').forEach(el => {
+            const key = el.dataset.stat;
+            if (data[key] !== undefined) el.textContent = data[key];
+        });
+    }).catch(() => {});
+}, 60000);
+</script>
+</body>
+</html>

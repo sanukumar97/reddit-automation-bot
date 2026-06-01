@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Articles{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>📰 Knowledge Base</h1>
+    <p>All articles scraped from monitored sources</p>
+</div>
+
+{% if articles %}
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Source</th>
+                <th>Category</th>
+                <th>Words</th>
+                <th>Discovered</th>
+                <th>Status</th>
+                <th>Relevance</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for article in articles %}
+        <tr>
+            <td>
+                <a href="{{ article.url }}" target="_blank">{{ article.title|truncate_text(65) }}</a>
+            </td>
+            <td class="text-muted">{{ article.source_name or article.source_website or '—' }}</td>
+            <td>{% if article.category %}<span class="badge badge-purple">{{ article.category }}</span>{% endif %}</td>
+            <td class="text-muted">{{ article.word_count }}</td>
+            <td class="text-muted">{{ article.discovered_at|format_datetime }}</td>
+            <td>
+                <span class="badge {% if article.status == 'posted' %}badge-green
+                              {% elif article.status == 'analyzed' %}badge-blue
+                              {% elif article.status == 'generated' %}badge-orange
+                              {% elif article.status == 'error' %}badge-red
+                              {% else %}badge-gray{% endif %}">
+                    {{ article.status }}
+                </span>
+            </td>
+            <td>
+                {% if article.relevance_score %}
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:60px; background:#222; border-radius:4px; height:6px;">
+                        <div style="width:{{ (article.relevance_score * 100)|int }}%; background:#ff6b35; border-radius:4px; height:6px;"></div>
+                    </div>
+                    <span class="text-muted">{{ (article.relevance_score * 100)|int }}%</span>
+                </div>
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card" style="text-align:center; padding:60px;">
+    <p style="font-size:40px; margin-bottom:16px;">📭</p>
+    <p style="font-size:16px; color:#ccc;">No articles in the knowledge base yet</p>
+    <p class="text-muted" style="margin-top:8px;">Add sources and run a monitoring cycle to start collecting articles.</p>
+    <a href="/sources" class="btn btn-primary" style="margin-top:20px; display:inline-block;">→ Add Sources</a>
+</div>
+{% endif %}
+
+{% endblock %}

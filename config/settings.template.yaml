@@ -1,0 +1,132 @@
+# ============================================================
+# MAIN CONFIGURATION FILE
+# Edit this file to configure your Reddit Automation System
+# ============================================================
+
+# -------------------------------------------------------
+# REDDIT API CREDENTIALS
+# Get these from: https://www.reddit.com/prefs/apps
+# Click "Create App" → choose "script" type
+# -------------------------------------------------------
+reddit:
+  client_id: "YOUR_CLIENT_ID_HERE"
+  client_secret: "YOUR_CLIENT_SECRET_HERE"
+  username: "YOUR_REDDIT_USERNAME"
+  password: "YOUR_REDDIT_PASSWORD"
+  user_agent: "RedditBot/1.0 by YOUR_REDDIT_USERNAME"
+
+# -------------------------------------------------------
+# AI / LLM CONFIGURATION
+# Default: Ollama (free, runs locally on your machine)
+# -------------------------------------------------------
+ai:
+  provider: "ollama"          # Options: "ollama", "openai", "anthropic"
+  model: "llama3.1"           # Ollama model name (run: ollama pull llama3.1)
+  ollama_url: "http://localhost:11434"
+  temperature: 0.8            # Creativity (0.0 = focused, 1.0 = creative)
+  max_tokens: 1500
+
+  # Only needed if provider is "openai" or "anthropic"
+  openai_api_key: ""
+  anthropic_api_key: ""
+
+# -------------------------------------------------------
+# MONITORING SETTINGS
+# -------------------------------------------------------
+monitoring:
+  check_interval_minutes: 30  # How often to scan sources (in minutes)
+  max_articles_per_scan: 10   # Max new articles to process per scan cycle
+  request_timeout_seconds: 15 # Timeout for web requests
+  retry_attempts: 3           # How many times to retry failed requests
+  retry_delay_seconds: 5      # Wait time between retries
+
+# -------------------------------------------------------
+# CONTENT PROCESSING
+# -------------------------------------------------------
+content:
+  min_article_length: 200     # Skip articles shorter than this (characters)
+  max_article_length: 50000   # Truncate articles longer than this
+  summary_max_length: 500     # Max length for AI-generated summaries
+
+# -------------------------------------------------------
+# REDDIT POSTING SETTINGS
+# -------------------------------------------------------
+posting:
+  approval_mode: "B"          # A=Auto Post, B=Review First, C=Draft Only
+  post_delay_seconds: 30      # Wait between posts (avoid rate limits)
+  max_posts_per_day: 10       # Safety limit on daily posts
+  min_hours_between_posts: 2  # Minimum gap between posts to same subreddit
+
+# -------------------------------------------------------
+# DASHBOARD SETTINGS
+# -------------------------------------------------------
+dashboard:
+  host: "127.0.0.1"
+  port: 5000
+  secret_key: "CHANGE-THIS-TO-A-RANDOM-STRING"
+  debug: false
+
+# -------------------------------------------------------
+# NOTIFICATIONS (Optional)
+# -------------------------------------------------------
+notifications:
+  enabled: false
+  email: ""                   # Your email for failure alerts
+  smtp_server: ""
+  smtp_port: 587
+  smtp_username: ""
+  smtp_password: ""
+
+# -------------------------------------------------------
+# TWITTER/X SETTINGS
+# Get credentials at: https://developer.twitter.com/en/portal/dashboard
+# 1. Create a project and app
+# 2. Set app permissions to "Read and Write"
+# 3. Generate Access Token and Secret
+# Free tier: 1,500 tweets/month
+# -------------------------------------------------------
+twitter:
+  enabled: false                 # Set to true to enable Twitter posting
+  api_key: "YOUR_API_KEY"
+  api_secret: "YOUR_API_SECRET"
+  access_token: "YOUR_ACCESS_TOKEN"
+  access_token_secret: "YOUR_ACCESS_TOKEN_SECRET"
+  bearer_token: "YOUR_BEARER_TOKEN"
+  username: "your_twitter_handle"  # Without the @
+  approval_mode: "B"             # A=Auto, B=Review First, C=Draft Only
+  default_tweet_type: "single"   # "single" or "thread"
+  default_hashtags: []           # e.g. ["AI", "Tech"] — added to tweets
+  max_tweets_per_day: 20         # Stay well under the 1500/month free limit
+  post_delay_seconds: 15         # Wait between tweets
+  thread_delay_seconds: 3        # Wait between tweets in a thread
+
+# -------------------------------------------------------
+# QUORA SETTINGS
+# Quora has no public API — answers are saved as draft files
+# for easy copy-pasting into Quora manually.
+# Draft files saved to: quora_drafts/ folder
+# -------------------------------------------------------
+quora:
+  enabled: false                 # Set to true to generate Quora answers
+  auto_export_drafts: true       # Auto-save answers as .md files in quora_drafts/
+  max_answers_per_cycle: 3       # Max new Quora answers to generate per cycle
+  min_article_relevance: 0.5     # Only use articles with relevance >= this score
+
+# -------------------------------------------------------
+# STORAGE CLEANUP
+# Automatically deletes scraped content after N days to save storage.
+# Title, URL, and dates are KEPT forever (needed for duplicate checks).
+# Only the heavy content (full text, AI analysis, images) is removed.
+# -------------------------------------------------------
+storage:
+  cleanup_after_days: 2        # Delete content 2 days after posting
+                               # Set to 0 to disable cleanup
+
+# -------------------------------------------------------
+# LOGGING
+# -------------------------------------------------------
+logging:
+  level: "INFO"               # DEBUG, INFO, WARNING, ERROR
+  log_file: "logs/system.log"
+  max_log_size_mb: 10
+  backup_count: 5

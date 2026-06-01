@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>📊 Analytics</h1>
+    <p>Performance tracking and post statistics</p>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ data.total_posts_published }}</div>
+        <div class="stat-label">Posts Published</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.total_upvotes }}</div>
+        <div class="stat-label">Total Upvotes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.avg_score }}</div>
+        <div class="stat-label">Avg Score</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.avg_comments }}</div>
+        <div class="stat-label">Avg Comments</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ data.best_score }}</div>
+        <div class="stat-label">Best Score</div>
+    </div>
+</div>
+
+<div class="two-col">
+    <!-- Per-Subreddit Performance -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">🎯 Subreddit Performance</span>
+        </div>
+        {% if data.subreddit_stats %}
+        <table>
+            <thead>
+                <tr><th>Subreddit</th><th>Posts</th><th>Avg Score</th><th>Comments</th></tr>
+            </thead>
+            <tbody>
+            {% for sub in data.subreddit_stats %}
+            <tr>
+                <td><span class="badge badge-blue">r/{{ sub.subreddit }}</span></td>
+                <td>{{ sub.post_count }}</td>
+                <td style="color:{% if sub.avg_score > 10 %}#4caf50{% else %}#ff9800{% endif %}">
+                    {{ "%.1f"|format(sub.avg_score or 0) }}
+                </td>
+                <td>{{ sub.total_comments or 0 }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted" style="text-align:center;padding:20px;">No published posts yet</p>
+        {% endif %}
+    </div>
+
+    <!-- Top Performing Posts -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">🏆 Top Posts</span>
+        </div>
+        {% if data.top_posts %}
+        <table>
+            <thead>
+                <tr><th>Title</th><th>Sub</th><th>Score</th></tr>
+            </thead>
+            <tbody>
+            {% for post in data.top_posts %}
+            <tr>
+                <td>
+                    {% if post.reddit_url %}
+                    <a href="{{ post.reddit_url }}" target="_blank">{{ post.title|truncate_text(45) }}</a>
+                    {% else %}
+                    {{ post.title|truncate_text(45) }}
+                    {% endif %}
+                </td>
+                <td><span class="badge badge-blue">r/{{ post.subreddit }}</span></td>
+                <td style="color:#4caf50; font-weight:600;">{{ post.score }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted" style="text-align:center;padding:20px;">No posts yet</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Category Distribution -->
+{% if data.category_distribution %}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📂 Content by Category</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:12px; padding:8px 0;">
+    {% for cat in data.category_distribution %}
+        <div style="background:#222; border:1px solid #333; border-radius:6px; padding:10px 16px; text-align:center; min-width:120px;">
+            <div style="font-size:20px; font-weight:700; color:#ff6b35;">{{ cat.count }}</div>
+            <div style="font-size:12px; color:#888; margin-top:4px;">{{ cat.category or 'Uncategorized' }}</div>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Posting Timeline -->
+{% if data.daily_posts %}
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">📅 Posts Timeline (Last 30 Days)</span>
+    </div>
+    <table>
+        <thead>
+            <tr><th>Date</th><th>Posts Published</th><th>Activity</th></tr>
+        </thead>
+        <tbody>
+        {% for day in data.daily_posts %}
+        <tr>
+            <td>{{ day.date }}</td>
+            <td>{{ day.count }}</td>
+            <td>
+                <div style="display:flex; gap:2px;">
+                {% for i in range([day.count, 20]|min) %}
+                <div style="width:10px; height:10px; background:#ff6b35; border-radius:2px;"></div>
+                {% endfor %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

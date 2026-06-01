@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Twitter/X{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>𝕏 Twitter/X</h1>
+    <p>Generated tweets and posting queue</p>
+</div>
+
+{% if not twitter_enabled %}
+<div class="card" style="border-color:#3a2a00;">
+    <div style="padding:8px 0;">
+        <p style="color:#ff9800; font-weight:600; margin-bottom:10px;">⚠️ Twitter posting is currently disabled</p>
+        <p style="color:#aaa; font-size:13px;">To enable it, update <code>config/settings.yaml</code>:</p>
+        <pre style="margin-top:10px;">twitter:
+  enabled: true
+  api_key: "YOUR_API_KEY"
+  api_secret: "YOUR_API_SECRET"
+  access_token: "YOUR_ACCESS_TOKEN"
+  access_token_secret: "YOUR_ACCESS_TOKEN_SECRET"
+  bearer_token: "YOUR_BEARER_TOKEN"
+  username: "your_twitter_handle"</pre>
+        <p style="color:#888; font-size:12px; margin-top:10px;">Get credentials free at: <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">developer.twitter.com</a></p>
+        <p style="color:#888; font-size:12px;">→ Create a project → Create app → Set permissions to "Read and Write" → Generate tokens</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Pending Tweets -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">⏳ Pending Tweets ({{ pending|length }})</span>
+    </div>
+
+    {% if pending %}
+    {% for tweet in pending %}
+    <div style="border:1px solid #2a2a2a; border-radius:6px; padding:14px; margin-bottom:12px; background:#111;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+            <div>
+                <span class="badge badge-{% if tweet.tweet_type == 'thread' %}purple{% else %}blue{% endif %}">
+                    {{ tweet.tweet_type }}
+                </span>
+                <span class="text-muted" style="margin-left:8px; font-size:11px;">{{ tweet.generated_at }}</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <form method="post" action="/twitter/approve/{{ tweet.id }}" style="display:inline">
+                    <button class="btn btn-sm btn-success">✓ Approve</button>
+                </form>
+                <form method="post" action="/twitter/reject/{{ tweet.id }}" style="display:inline">
+                    <button class="btn btn-sm btn-danger">✗ Reject</button>
+                </form>
+            </div>
+        </div>
+
+        <div style="background:#1a1a1a; border-radius:6px; padding:12px; font-size:14px; line-height:1.6; color:#e0e0e0; white-space:pre-wrap; margin-bottom:8px;">{{ tweet.tweet_text }}</div>
+
+        {% if tweet.tweet_type == 'thread' and tweet.thread_tweets %}
+        <details style="margin-top:6px;">
+            <summary style="cursor:pointer; font-size:12px; color:#888;">View full thread</summary>
+            <div style="margin-top:8px; padding-left:12px; border-left:2px solid #333;">
+            {% set thread = tweet.thread_tweets | tojson | fromjson if tweet.thread_tweets else [] %}
+            {% for t in thread %}
+            <div style="background:#111; border-radius:4px; padding:8px; margin-bottom:6px; font-size:12px; color:#ccc;">{{ t }}</div>
+            {% endfor %}
+            </div>
+        </details>
+        {% endif %}
+
+        {% if tweet.article_title %}
+        <p class="text-muted" style="font-size:11px; margin-top:6px;">
+            📰 From: {{ tweet.article_title|truncate_text(70) }}
+        </p>
+        {% endif %}
+
+        <p style="font-size:11px; color:#{{ '4caf50' if tweet.tweet_text|length <= 270 else 'ff9800' }}; margin-top:4px;">
+            {{ tweet.tweet_text|length }}/280 characters
+        </p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-muted" style="text-align:center; padding:30px;">No tweets pending review</p>
+    {% endif %}
+</div>
+
+<!-- Published Tweets -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">✅ Published Tweets ({{ published|length }})</span>
+    </div>
+    {% if published %}
+    <table>
+        <thead>
+            <tr><th>Tweet</th><th>Type</th><th>Posted</th><th>Likes</th><th>Retweets</th><th>Link</th></tr>
+        </thead>
+        <tbody>
+        {% for tweet in published %}
+        <tr>
+            <td>{{ tweet.tweet_text|truncate_text(70) }}</td>
+            <td><span class="badge badge-blue">{{ tweet.tweet_type }}</span></td>
+            <td class="text-muted">{{ tweet.posted_at|format_datetime }}</td>
+            <td>{{ tweet.likes }}</td>
+            <td>{{ tweet.retweets }}</td>
+            <td>
+                {% if tweet.tweet_url %}
+                <a href="{{ tweet.tweet_url }}" target="_blank">View ↗</a>
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted" style="text-align:center; padding:20px;">No tweets published yet</p>
+    {% endif %}
+</div>
+
+{% endblock %}

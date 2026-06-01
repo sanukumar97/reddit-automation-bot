@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Logs{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>📋 System Logs</h1>
+    <p>Activity log and error tracking</p>
+</div>
+
+<!-- Filter -->
+<div class="card" style="padding:12px 20px;">
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span style="font-size:13px; color:#888;">Filter:</span>
+        <a href="/logs" class="btn btn-sm {% if not level_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+        <a href="/logs?level=INFO" class="btn btn-sm {% if level_filter == 'INFO' %}btn-primary{% else %}btn-secondary{% endif %}">INFO</a>
+        <a href="/logs?level=WARNING" class="btn btn-sm {% if level_filter == 'WARNING' %}btn-primary{% else %}btn-secondary{% endif %}">WARNING</a>
+        <a href="/logs?level=ERROR" class="btn btn-sm {% if level_filter == 'ERROR' %}btn-primary{% else %}btn-secondary{% endif %}">ERROR</a>
+    </div>
+</div>
+
+<div class="card">
+    {% if logs %}
+    <table>
+        <thead>
+            <tr><th>Time</th><th>Level</th><th>Module</th><th>Message</th></tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+        <tr>
+            <td class="text-muted" style="white-space:nowrap;">{{ log.created_at|format_datetime }}</td>
+            <td>
+                <span class="badge {% if log.level == 'ERROR' %}badge-red{% elif log.level == 'WARNING' %}badge-orange{% elif log.level == 'DEBUG' %}badge-gray{% else %}badge-green{% endif %}">
+                    {{ log.level }}
+                </span>
+            </td>
+            <td class="text-muted">{{ log.module or '—' }}</td>
+            <td>{{ log.message }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted" style="text-align:center;padding:40px;">No log entries found</p>
+    {% endif %}
+</div>
+
+{% endblock %}
